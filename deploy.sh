@@ -4,5 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 git pull --ff-only
-docker compose -f docker-compose.prod.yml up -d --build
+# Pull newer builds of the base images (PHP, Caddy) so OS and security patches land on every deploy
+docker compose -f docker-compose.prod.yml pull --ignore-buildable
+docker compose -f docker-compose.prod.yml build --pull
+docker compose -f docker-compose.prod.yml up -d
 docker image prune -f
