@@ -16,6 +16,8 @@ All endpoints are under `/api/v1` and return JSON.
 | ------ | ---- | ----------- |
 | `GET` | `/api/v1/plugins` | List plugins (paginated) |
 | `GET` | `/api/v1/plugins/{name}` | Get one plugin with full details (name is case-insensitive) |
+| `GET` | `/api/v1/icon-packs` | List icon packs (paginated) |
+| `GET` | `/api/v1/icon-packs/{name}` | Get one icon pack with full details, including the `.licons` download URL (name is case-insensitive) |
 
 ### Query parameters for `/plugins`
 
@@ -31,6 +33,21 @@ Example:
 
 ```bash
 curl "https://logiplugin.com/api/v1/plugins?search=spotify&per_page=10"
+```
+
+### Query parameters for `/icon-packs`
+
+| Parameter | Description |
+| --------- | ----------- |
+| `search` | Case-insensitive match on the icon pack name or display name |
+| `category` | Only icon packs in this category (e.g. `Animated`, `Creative`) |
+| `page` | Page number (default `1`) |
+| `per_page` | Results per page (default `25`, max `100`) |
+
+Example:
+
+```bash
+curl "https://logiplugin.com/api/v1/icon-packs?category=Animated"
 ```
 
 Responses are cached on the server (30 minutes by default) and sent with `Cache-Control: public, max-age=300` plus an `ETag`.
