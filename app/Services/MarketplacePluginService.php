@@ -14,28 +14,7 @@ class MarketplacePluginService
 {
     public function list(array $filters = []): array
     {
-        $plugins = $this->plugins();
-
-        return array_values(array_filter($plugins, function (array $plugin) use ($filters): bool {
-            $search = $filters['search'] ?? null;
-
-            if ($search !== null && $search !== '') {
-                $name = (string) ($plugin['name'] ?? '');
-                $displayName = (string) ($plugin['displayName'] ?? '');
-
-                if (stripos($name, $search) === false && stripos($displayName, $search) === false) {
-                    return false;
-                }
-            }
-
-            if (($filters['platform'] ?? null) !== null
-                && ! in_array($filters['platform'], $plugin['platforms'] ?? [], true)) {
-                return false;
-            }
-
-            return ($filters['category'] ?? null) === null
-                || in_array($filters['category'], $plugin['categories'] ?? [], true);
-        }));
+        return $this->filter($this->plugins(), $filters);
     }
 
     public function find(string $name): ?array
@@ -47,6 +26,49 @@ class MarketplacePluginService
         }
 
         return null;
+    }
+
+    public function iconPacks(array $filters = []): array
+    {
+        return $this->filter($this->allIconPacks(), $filters);
+    }
+
+    public function findIconPack(string $name): ?array
+    {
+        foreach ($this->allIconPacks() as $iconPack) {
+            if (strcasecmp($iconPack['name'], $name) === 0) {
+                return array_merge($iconPack, $this->iconPackDetails($iconPack['name']));
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Keep only the items that match the search, platform and category filters.
+     */
+    private function filter(array $items, array $filters): array
+    {
+        return array_values(array_filter($items, function (array $item) use ($filters): bool {
+            $search = $filters['search'] ?? null;
+
+            if ($search !== null && $search !== '') {
+                $name = (string) ($item['name'] ?? '');
+                $displayName = (string) ($item['displayName'] ?? '');
+
+                if (stripos($name, $search) === false && stripos($displayName, $search) === false) {
+                    return false;
+                }
+            }
+
+            if (($filters['platform'] ?? null) !== null
+                && ! in_array($filters['platform'], $item['platforms'] ?? [], true)) {
+                return false;
+            }
+
+            return ($filters['category'] ?? null) === null
+                || in_array($filters['category'], $item['categories'] ?? [], true);
+        }));
     }
 
     private function plugins(): array
@@ -137,6 +159,74 @@ class MarketplacePluginService
             'downloads' => $downloads[$name]['downloads']
                 ?? $downloads[$plugin['displayName'] ?? '']['downloads']
                 ?? 0,
+        ];
+    }
+
+    private function allIconPacks(): array
+    {
+        return Cache::remember('marketplace.icon_packs', $this->cacheTtl(), function (): array {
+            $data = $this->getNextData('/_next/data/%s/icons/en/4.json');
+            $state = $data['pageProps']['initialState'] ?? [];
+            $rawIconPacks = $state['iconList']['icons'] ?? null;
+
+            if (! is_array($rawIconPacks) || $rawIconPacks === []) {
+                throw new MarketplaceException('No icon packs found in the marketplace response.');
+            }
+
+            $categoryNames = array_column($state['iconCategoryList']['iconCategories'] ?? [], 'name', 'id');
+
+            return array_map(fn (array $iconPack): array => $this->mapIconPack($iconPack, $categoryNames), $rawIconPacks);
+        });
+    }
+
+    private function iconPackDetails(string $name): array
+    {
+        return Cache::remember('marketplace.icon_pack.details.'.sha1($name), $this->cacheTtl(), function () use ($name): array {
+            $data = $this->getNextData(
+                '/_next/data/%s/icon/%s/en.json',
+                [rawurlencode($name)],
+                ['language' => 'en', 'iconName' => $name],
+            );
+            $iconPack = $data['pageProps']['initialState']['iconDetails']['icon'] ?? null;
+
+            if (! is_array($iconPack)) {
+                throw new MarketplaceException('Detailed icon pack data not found.');
+            }
+
+            return [
+                'description' => $iconPack['description'] ?? null,
+                'copyright' => $iconPack['copyright'] ?? null,
+                'author' => [
+                    'name' => $iconPack['author']['name'] ?? null,
+                ],
+                'package' => $iconPack['package'] ?? null,
+                'previewImages' => array_map(fn (array $image): array => [
+                    'url' => $image['url'] ?? null,
+                    'tooltip' => $image['tooltip'] ?? null,
+                ], $iconPack['previewImages'] ?? []),
+            ];
+        });
+    }
+
+    private function mapIconPack(array $iconPack, array $categoryNames): array
+    {
+        $categories = [];
+
+        foreach ($iconPack['categoryIds'] ?? [] as $categoryId) {
+            // Category 0 is the marketplace's "All" tab, not a real category.
+            if ($categoryId !== 0 && isset($categoryNames[$categoryId])) {
+                $categories[] = $categoryNames[$categoryId];
+            }
+        }
+
+        return [
+            'id' => $iconPack['id'] ?? null,
+            'name' => $iconPack['name'] ?? null,
+            'displayName' => $iconPack['displayName'] ?? null,
+            'categories' => $categories,
+            'icon' => $iconPack['icon'] ?? null,
+            'cardIcon' => $iconPack['cardIcon'] ?? null,
+            'firstPublicAt' => $iconPack['firstPublicAt'] ?? null,
         ];
     }
 
