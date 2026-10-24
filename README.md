@@ -18,6 +18,8 @@ All endpoints are under `/api/v1` and return JSON.
 | `GET` | `/api/v1/plugins/{name}` | Get one plugin with full details (name is case-insensitive) |
 | `GET` | `/api/v1/icon-packs` | List icon packs (paginated) |
 | `GET` | `/api/v1/icon-packs/{name}` | Get one icon pack with full details, including the `.licons` download URL (name is case-insensitive) |
+| `GET` | `/api/v1/profiles` | List profiles, including profiles inside profile groups (paginated) |
+| `GET` | `/api/v1/profiles/{name}` | Get one profile with its author and packages (name is case-insensitive) |
 
 ### Query parameters for `/plugins`
 
@@ -44,10 +46,21 @@ curl "https://logiplugin.com/api/v1/plugins?search=spotify&per_page=10"
 | `page` | Page number (default `1`) |
 | `per_page` | Results per page (default `25`, max `100`) |
 
+### Query parameters for `/profiles`
+
+Same as `/plugins` (`search`, `platform`, `category`, `page`, `per_page`), plus:
+
+| Parameter | Description |
+| --------- | ----------- |
+| `device` | Only profiles for this device, e.g. `MX Creative Console` |
+
+Each profile has a `group` field with the profile group it belongs to (e.g. `photoshop`), or `null` for standalone profiles.
+
 Example:
 
 ```bash
 curl "https://logiplugin.com/api/v1/icon-packs?category=Animated"
+curl "https://logiplugin.com/api/v1/profiles?category=Creativity&per_page=10"
 ```
 
 Responses are cached on the server (30 minutes by default) and sent with `Cache-Control: public, max-age=300` plus an `ETag`.

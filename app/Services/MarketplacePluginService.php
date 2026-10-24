@@ -44,8 +44,24 @@ class MarketplacePluginService
         return null;
     }
 
+    public function profiles(array $filters = []): array
+    {
+        return $this->filter($this->allProfiles(), $filters);
+    }
+
+    public function findProfile(string $name): ?array
+    {
+        foreach ($this->allProfiles() as $profile) {
+            if (strcasecmp($profile['name'], $name) === 0) {
+                return array_merge($profile, $this->profileDetails($profile['name']));
+            }
+        }
+
+        return null;
+    }
+
     /**
-     * Keep only the items that match the search, platform and category filters.
+     * Keep only the items (plugins, icon packs or profiles) that match every given filter.
      */
     private function filter(array $items, array $filters): array
     {
@@ -63,6 +79,11 @@ class MarketplacePluginService
 
             if (($filters['platform'] ?? null) !== null
                 && ! in_array($filters['platform'], $item['platforms'] ?? [], true)) {
+                return false;
+            }
+
+            if (($filters['device'] ?? null) !== null
+                && ! in_array($filters['device'], $item['devices'] ?? [], true)) {
                 return false;
             }
 
@@ -134,17 +155,6 @@ class MarketplacePluginService
     private function mapPlugin(array $plugin, array $downloads): array
     {
         $name = $plugin['name'] ?? null;
-        $platforms = [];
-
-        foreach ($plugin['packages'] ?? [] as $package) {
-            foreach ($package['supportedPlatforms'] ?? [] as $platform) {
-                $platformName = $platform['displayName'] ?? $platform['platformDisplay'] ?? null;
-
-                if ($platformName !== null && ! in_array($platformName, $platforms, true)) {
-                    $platforms[] = $platformName;
-                }
-            }
-        }
 
         return [
             'id' => $plugin['id'] ?? null,
@@ -154,7 +164,7 @@ class MarketplacePluginService
             'categories' => array_column($plugin['categories'] ?? [], 'name'),
             'icon' => $plugin['icon'] ?? null,
             'versions' => array_column($plugin['packages'] ?? [], 'version'),
-            'platforms' => $platforms,
+            'platforms' => $this->platformNames($plugin['packages'] ?? []),
             'firstPublicAt' => $plugin['firstPublicAt'] ?? null,
             'downloads' => $downloads[$name]['downloads']
                 ?? $downloads[$plugin['displayName'] ?? '']['downloads']
@@ -228,6 +238,131 @@ class MarketplacePluginService
             'cardIcon' => $iconPack['cardIcon'] ?? null,
             'firstPublicAt' => $iconPack['firstPublicAt'] ?? null,
         ];
+    }
+
+    /**
+     * The marketplace lists a few standalone profiles, but most profiles live
+     * inside profile groups (one per app, e.g. Photoshop). We merge both.
+     */
+    private function allProfiles(): array
+    {
+        return Cache::remember('marketplace.profiles', $this->cacheTtl(), function (): array {
+            $state = $this->getNextData('/_next/data/%s/profiles/en/4.json')['pageProps']['initialState'] ?? [];
+
+            $categories = [];
+
+            foreach ($state['profileCategoryList']['profileCategories'] ?? [] as $category) {
+                if (($category['id'] ?? 0) !== 0) {
+                    $categories[$category['id']] = $category['name'] ?? null;
+                }
+            }
+
+            $profiles = [];
+
+            foreach ($state['profileList']['profiles'] ?? [] as $profile) {
+                $profiles[$profile['name']] = $this->mapProfile($profile, null, $categories);
+            }
+
+            foreach ($state['profileGroupList']['profileGroups'] ?? [] as $group) {
+                $groupName = $group['name'];
+                $data = $this->getNextData(
+                    '/_next/data/%s/profilegroup/%s/en.json',
+                    [rawurlencode($groupName)],
+                    ['language' => 'en', 'profileGroupName' => $groupName],
+                );
+
+                foreach ($data['pageProps']['initialState']['profileGroupDetails']['profiles'] ?? [] as $profile) {
+                    $profiles[$profile['name']] ??= $this->mapProfile($profile, $groupName, $categories);
+                }
+            }
+
+            if ($profiles === []) {
+                throw new MarketplaceException('No profiles found in the marketplace response.');
+            }
+
+            return array_values($profiles);
+        });
+    }
+
+    private function profileDetails(string $name): array
+    {
+        return Cache::remember('marketplace.profile.details.'.sha1($name), $this->cacheTtl(), function () use ($name): array {
+            $data = $this->getNextData(
+                '/_next/data/%s/profile/%s/en.json',
+                [rawurlencode($name)],
+                ['language' => 'en', 'profileName' => $name],
+            );
+            $profile = $data['pageProps']['initialState']['profileDetails']['profile'] ?? null;
+
+            if (! is_array($profile)) {
+                throw new MarketplaceException('Detailed profile data not found.');
+            }
+
+            // Packages also contain a huge device manifest and base64 preview
+            // images, so we only pick the fields that are useful.
+            return [
+                'author' => [
+                    'name' => $profile['author']['name'] ?? null,
+                ],
+                'packages' => array_map(fn (array $package): array => [
+                    'name' => $package['name'] ?? null,
+                    'version' => $package['version'] ?? null,
+                    'fileUrl' => $package['package'] ?? null,
+                    'device' => $package['supportedDevice']['displayName'] ?? null,
+                    'platforms' => $this->platformNames([$package]),
+                ], $profile['packages'] ?? []),
+            ];
+        });
+    }
+
+    private function mapProfile(array $profile, ?string $group, array $categories): array
+    {
+        $devices = [];
+
+        foreach ($profile['packages'] ?? [] as $package) {
+            $device = $package['supportedDevice']['displayName'] ?? null;
+
+            if ($device !== null && ! in_array($device, $devices, true)) {
+                $devices[] = $device;
+            }
+        }
+
+        return [
+            'id' => $profile['id'] ?? null,
+            'name' => $profile['name'] ?? null,
+            'displayName' => $profile['displayName'] ?? null,
+            'description' => $profile['description'] ?? null,
+            'categories' => array_values(array_filter(array_map(
+                fn (int|string $id): ?string => $categories[$id] ?? null,
+                $profile['categoryIds'] ?? [],
+            ))),
+            'icon' => $profile['icon'] ?? null,
+            'group' => $group,
+            'devices' => $devices,
+            'platforms' => $this->platformNames($profile['packages'] ?? []),
+            'requiredPlugins' => array_column($profile['requiredPlugins'] ?? [], 'name'),
+            'firstPublicAt' => $profile['firstPublicAt'] ?? null,
+        ];
+    }
+
+    /**
+     * Unique platform names (e.g. "Windows", "macOS") across the given packages.
+     */
+    private function platformNames(array $packages): array
+    {
+        $platforms = [];
+
+        foreach ($packages as $package) {
+            foreach ($package['supportedPlatforms'] ?? [] as $platform) {
+                $platformName = $platform['displayName'] ?? $platform['platformDisplay'] ?? null;
+
+                if ($platformName !== null && ! in_array($platformName, $platforms, true)) {
+                    $platforms[] = $platformName;
+                }
+            }
+        }
+
+        return $platforms;
     }
 
     /**
