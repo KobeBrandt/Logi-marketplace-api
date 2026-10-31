@@ -27,3 +27,4 @@ Homestead.yaml
 Thumbs.db
 docker/mysql-data
 .env.server
+.claude
