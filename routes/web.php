@@ -13,6 +13,10 @@ Route::get('/', function () {
 });
 
 Route::prefix('discord-bot')->name('discord-bot.')->group(function () {
+    Route::view('/', 'discord-bot.home')->name('home');
+    Route::view('/terms', 'discord-bot.terms')->name('terms');
+    Route::view('/privacy', 'discord-bot.privacy')->name('privacy');
+
     // A short link that always points at the current Discord invite, so it can be shared anywhere.
     Route::get('/invite', function () {
         $clientId = config('services.discord_bot.client_id');

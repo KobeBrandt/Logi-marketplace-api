@@ -6,6 +6,13 @@ use Tests\TestCase;
 
 class DiscordBotPagesTest extends TestCase
 {
+    public function test_the_bot_pages_load(): void
+    {
+        $this->get('/discord-bot')->assertOk()->assertSee(route('discord-bot.invite'));
+        $this->get('/discord-bot/terms')->assertOk()->assertSee('Terms of Service');
+        $this->get('/discord-bot/privacy')->assertOk()->assertSee('Privacy Policy');
+    }
+
     public function test_the_invite_link_redirects_to_discord(): void
     {
         config(['services.discord_bot.client_id' => '1234567890']);
