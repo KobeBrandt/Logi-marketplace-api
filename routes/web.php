@@ -11,3 +11,21 @@ Route::get('/', function () {
         'maxPerPage' => PluginIndexRequest::MAX_PER_PAGE,
     ]);
 });
+
+Route::prefix('discord-bot')->name('discord-bot.')->group(function () {
+    Route::view('/', 'discord-bot.home')->name('home');
+    Route::view('/terms', 'discord-bot.terms')->name('terms');
+    Route::view('/privacy', 'discord-bot.privacy')->name('privacy');
+
+    // A short link that always points at the current Discord invite, so it can be shared anywhere.
+    Route::get('/invite', function () {
+        $clientId = config('services.discord_bot.client_id');
+        abort_if(blank($clientId), 503, 'The bot invite link is not set up yet.');
+
+        return redirect()->away('https://discord.com/oauth2/authorize?'.http_build_query([
+            'client_id' => $clientId,
+            'permissions' => config('services.discord_bot.permissions'),
+            'scope' => 'bot applications.commands',
+        ], arg_separator: '&', encoding_type: PHP_QUERY_RFC3986));
+    })->name('invite');
+});
