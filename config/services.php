@@ -42,4 +42,11 @@ return [
         'cache_ttl' => (int) env('LOGI_MARKETPLACE_CACHE_TTL', 1800),
     ],
 
+    'discord_bot' => [
+        // The bot's application ID from the Discord Developer Portal. /discord-bot/invite needs it.
+        'client_id' => env('DISCORD_BOT_CLIENT_ID'),
+        // View Channel, Send Messages and Embed Links: what /channel-updates needs to post.
+        'permissions' => env('DISCORD_BOT_PERMISSIONS', '19456'),
+    ],
+
 ];
