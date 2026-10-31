@@ -210,6 +210,7 @@
         <nav class="footer-links" aria-label="Site links">
             <a href="{{ route('discord-bot.terms') }}">Terms of Service</a>
             <a href="{{ route('discord-bot.privacy') }}">Privacy Policy</a>
+            <a href="mailto:contact@logiplugin.com">Contact</a>
             <a href="{{ url('/') }}">API docs</a>
             <a href="https://kbrandt.dev" target="_blank" rel="noopener">Built by KBrandt.dev</a>
         </nav>
