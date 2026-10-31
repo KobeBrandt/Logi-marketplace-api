@@ -102,13 +102,13 @@
         <li><strong>See or change your settings</strong> at any time with <code>/notifications</code>.</li>
         <li><strong>Delete your data</strong> by unfollowing every plugin and turning new-release DMs off.</li>
         <li><strong>Server admins</strong> can change or remove channel settings with <code>/channel-updates</code>, or remove the bot from the server to delete all of that server's settings.</li>
-        <li><strong>Anything else</strong>, such as a question or a request to access or delete data, can be raised by
-            <a href="https://github.com/KobeBrandt/Logi-marketplace-api/issues" target="_blank" rel="noopener">opening an issue on GitHub</a>.</li>
+        <li><strong>Anything else</strong>, such as a question or a request to access or delete data, can be sent by email to
+            <a href="mailto:contact@logiplugin.com">contact@logiplugin.com</a>.</li>
     </ul>
     <p>
         If you are in the EU or UK, the GDPR gives you rights to access, correct and delete your personal data and to
         object to how it is used. Because the bot stores so little, the commands above cover most of these.
-        Requests made another way will be handled as soon as reasonably possible.
+        Requests sent by email will be handled as soon as reasonably possible.
     </p>
 
     <h2>Children</h2>

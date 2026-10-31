@@ -101,8 +101,8 @@
 
         <h2>11. Contact</h2>
         <p>
-            Questions, problems or reports? Open an issue on
-            <a href="https://github.com/KobeBrandt/Logi-marketplace-api/issues" target="_blank" rel="noopener">GitHub</a>.
+            Questions, problems or reports? Email
+            <a href="mailto:contact@logiplugin.com">contact@logiplugin.com</a>.
         </p>
     </article>
 @endsection
