@@ -1,6 +1,13 @@
 # Caddy obtains and renews Let's Encrypt certificates for these domains automatically.
 logiplugin.com {
 	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		# Pages only use their own inline styles and scripts, and files and API calls from this site.
+		Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+	}
 	reverse_proxy app:80
 }
 
