@@ -12,6 +12,9 @@ Route::get('/', function () {
     ]);
 });
 
+// One privacy policy covers both the website and the bot.
+Route::permanentRedirect('/privacy', '/discord-bot/privacy');
+
 Route::prefix('discord-bot')->name('discord-bot.')->group(function () {
     Route::view('/', 'discord-bot.home')->name('home');
     Route::view('/terms', 'discord-bot.terms')->name('terms');
