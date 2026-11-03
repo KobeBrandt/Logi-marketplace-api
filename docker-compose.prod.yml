@@ -1,3 +1,10 @@
+# Keep logs small: Docker deletes the oldest log file once 3 × 10 MB is reached. The privacy policy promises this.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
 services:
   app:
     build:
@@ -5,6 +12,7 @@ services:
       dockerfile: docker/prod/Dockerfile
     restart: unless-stopped
     env_file: .env.production
+    logging: *logging
     # Not published on the host; only reachable through Caddy
     expose:
       - "80"
@@ -12,6 +20,7 @@ services:
   caddy:
     image: caddy:2
     restart: unless-stopped
+    logging: *logging
     ports:
       - "80:80"
       - "443:443"
