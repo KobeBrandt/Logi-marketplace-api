@@ -8,12 +8,12 @@
     <article class="prose">
         <p class="eyebrow">Discord bot</p>
         <h1>Terms of Service</h1>
-        <p class="updated">Last updated 31 October 2026</p>
+        <p class="updated">Last updated 3 November 2026</p>
 
         <h2>1. Accepting these terms</h2>
         <p>
             These terms cover the Logi Marketplace Discord bot (“the bot”), a free hobby project run by an
-            individual developer, <a href="https://kbrandt.dev" target="_blank" rel="noopener">KBrandt</a>.
+            individual developer, <a href="https://kbrandt.dev" target="_blank" rel="noopener">Kobe Brandt</a>.
             By using the bot or adding it to a Discord server, you agree to these terms. If you do not agree,
             please do not use the bot.
         </p>
@@ -35,6 +35,7 @@
             <li><code>/plugins</code>, <code>/icon-packs</code> and <code>/profiles</code> to look up marketplace items.</li>
             <li><code>/notifications</code> to get direct messages about updates to items you choose to follow.</li>
             <li><code>/channel-updates</code> to let server members with the Manage Server permission set up a channel that receives marketplace updates.</li>
+            <li><code>/privacy</code> to see what the bot stores about you, and to download or delete it.</li>
         </ul>
 
         <h2>3. Acceptable use</h2>
@@ -81,7 +82,8 @@
         <h2>8. Ending use</h2>
         <p>
             You can stop using the bot at any time by removing it from your server, turning off your
-            notifications with <code>/notifications</code>, or simply not using its commands.
+            notifications with <code>/notifications</code>, deleting your data with <code>/privacy</code>,
+            or simply not using its commands.
         </p>
         <p>
             The developer may block users or servers from using the bot if they abuse it or break these terms.

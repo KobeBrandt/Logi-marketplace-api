@@ -152,6 +152,16 @@
                 </p>
                 <p class="note">Only members with the Manage Server permission can use this command.</p>
             </article>
+
+            <article class="card command-card wide">
+                <h3>
+                    <span class="icon-tile" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                    </span>
+                    <code>/privacy</code>
+                </h3>
+                <p>See what the bot stores about you, download it as a file, or delete it.</p>
+            </article>
         </div>
     </section>
 

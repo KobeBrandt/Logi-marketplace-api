@@ -20,7 +20,7 @@ The regular `docker-compose.yml` is for local development only.
 
 3. **Docker**: install Docker Engine + the compose plugin (https://docs.docker.com/engine/install/).
 
-4. **GitHub access**: the repo is private, so the VPS reads it with a deploy key (read-only, limited to this one repo). On the VPS, as the user that runs deploys:
+4. **GitHub access**: the VPS reads the repo with a deploy key (read-only, limited to this one repo). On the VPS, as the user that runs deploys:
    ```bash
    ssh-keygen -t ed25519 -C "logiplugin-vps" -f ~/.ssh/logiplugin_deploy -N ""
    cat ~/.ssh/logiplugin_deploy.pub
@@ -40,7 +40,7 @@ The regular `docker-compose.yml` is for local development only.
 5. **Code and config**:
    ```bash
    sudo mkdir -p /opt/logiplugin && sudo chown "$USER": /opt/logiplugin
-   git clone git@github.com:KobeBrandt/Logiplugin.git /opt/logiplugin
+   git clone git@github.com:KobeBrandt/Logi-marketplace-api.git /opt/logiplugin
    cd /opt/logiplugin
    cp .env.production.example .env.production
    echo "APP_KEY=base64:$(openssl rand -base64 32)"   # paste into .env.production

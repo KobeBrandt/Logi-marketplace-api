@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title') · Logi Marketplace Discord Bot</title>
     <meta name="description" content="@yield('description')">
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=outfit:400,500,600,700" rel="stylesheet">
+    <link href="{{ asset('fonts/outfit.css') }}" rel="stylesheet">
     <style>
         /* Same colour tokens as the API docs page, so both parts of the site look alike. */
         :root {
